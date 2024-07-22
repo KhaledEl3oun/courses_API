@@ -1,5 +1,7 @@
 const { validationResult } = require("express-validator");
 const Course = require("../models/courseModel")
+const asyncHandler = require('express-async-handler')
+
 
 
 const getAllCourses =  async (req,res) => {
@@ -8,25 +10,23 @@ const getAllCourses =  async (req,res) => {
     const page = query.page || 2;
     const skip = (page - 1) * limit
     const courses = await Course.find()
-    .limit(limit).skip(skip);
+    // .limit(limit).skip(skip);
     res.json({status:"success", data:{courses}})
 }
 
-const getCourse = async(req,res) => {
-   try {
-    const course = await Course.findById(req.params.id)
-    res.json({status:"success", data:{course}})
-
-    if (!course) {
+const getCourse = asyncHandler(async(req,res) => {
+        const course = await Course.findById(req.params.id)
+        res.json({status:"success", data:{course}})
+    if(!course) {
         res.status(404).json({status:"fail", data:{course: null}})
     }
-   } catch (error) {
-    res.status(400).json({status:"error", data:{course: null},message:error.message, code:"400"})
-   }
-}
+//      else {
+//     res.status(400).json({status:"error", data:{course: null},message:error.message, code:"400"})
+// }
+})
 
 
-const createCourse = async(req,res) => {
+const createCourse = asyncHandler(async(req,res) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         res.status(400).json({status:"fail", data:errors.array()})
@@ -34,27 +34,21 @@ const createCourse = async(req,res) => {
    const newCourse = new Course(req.body)
    await newCourse.save();
         res.status(201).json({status:"success", data:{newCourse}})
-    }
+    })
 
-const updateCourse = async(req, res) => {
-   try {
-    const id = req.params.id;
-    const updatedCourse = await Course.findByIdAndUpdate({_id: id}, {$set:{...req.body}})
- return res.status(200).json({status:"success", data:{course: updatedCourse}})
-   } catch (error) {
-    return res.status(400).json({status:"error", message: error.message})
-   }
-}
+const updateCourse = asyncHandler
  
-const deleteCourse = async(req,res) => {
-    try {
-        const id = req.params.id;
-        const data = await Course.findByIdAndDelete({_id: id}, {$set:{...req.body}})
-     return res.status(200).json({status:"success", data:data})
-       } catch (error) {
-        return res.status(400).json({message:error})
-       }
-}
+const deleteCourse = asyncHandler(
+    async(req,res) => {
+           const id = req.params.id;
+            const data = await Course.findByIdAndDelete({_id: id}, {$set:{...req.body}})
+           res.status(200).json({status:"success", data:data})
+         if (!data) {
+             return res.status(400).json({message:"find error" }) 
+         }
+          
+    }
+)
 
 module.exports= {
     getAllCourses,
