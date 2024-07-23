@@ -4,7 +4,7 @@ const asyncHandler = require('express-async-handler')
 
 
 
-const getAllCourses =  async (req,res) => {
+const getAllCourses =  asyncHandler(async (req,res) => {
     const query = req.query;
     const limit = query.limit || 10
     const page = query.page || 2;
@@ -12,7 +12,7 @@ const getAllCourses =  async (req,res) => {
     const courses = await Course.find()
     // .limit(limit).skip(skip);
     res.json({status:"success", data:{courses}})
-}
+})
 
 const getCourse = asyncHandler(async(req,res) => {
         const course = await Course.findById(req.params.id)
