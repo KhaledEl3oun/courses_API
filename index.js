@@ -2,7 +2,9 @@ require("dotenv").config()
 const express = require("express");
 const cors = require("cors")
 const app = express();
+const path = require("path")
 
+app.use("/upload", express.static(path.join(__dirname,"upload")))
 const mongoose = require("mongoose");
 
 mongoose.connect(process.env.MONGO_URL)

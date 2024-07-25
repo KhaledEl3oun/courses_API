@@ -9,7 +9,7 @@ res.json({status: "success", user: {users}})
 
 const register = asyncHandler(
     async(req,res,next) => {
-        const {firstName, lastName, email, password} = req.body;
+        const {firstName, lastName, email, password, role} = req.body;
         const oldUser = await User.findOne({email:email})
          
         if (oldUser) {
@@ -22,10 +22,12 @@ const hashedPassword = await bcrypt.hash(password,10)
             firstName,
             lastName,
             email,
-            password: hashedPassword
+            password: hashedPassword,
+            role,
+            avatar:req.file.filename
         })
 
-       const token = await generateJwt({email:newUser.email, id: newUser._id})
+       const token = await generateJwt({email:newUser.email, id: newUser._id, role:newUser.role})
         newUser.token = token;
         await newUser.save()
         res.status(201).json({status: "success", user:{newUser}})
@@ -48,7 +50,7 @@ const login = asyncHandler(
          }
  const matchPassword = await bcrypt.compare(password, user.password)
  if (user && matchPassword) {
-    const token =await generateJwt({email:user.email, id: user._id})
+    const token =await generateJwt({email:user.email, id: user._id, role:user.role})
     return res.status(200).json({status:"success", user: {token}})
  } else {
     const error =  res.status(404).json({status:"error", message: "invalid email or password"})

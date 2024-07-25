@@ -5,7 +5,7 @@ module.exports = async(payload) => {
      await jwt.sign(
         payload,
          process.env.JWT_SECRET_KEY,
-         {expiresIn:"20m"})
+         {expiresIn:"30d"})
      return token;
 }
 //{email:newUser.email, id: newUser._id}
